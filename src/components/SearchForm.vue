@@ -1,4 +1,17 @@
 <script>
+
+  function makerequestwiki(data) {
+    let API_URL = "https://en.wikipedia.org/w/api.php" + "?origin=*"
+    let params = {
+      action: "query",
+      list: "search",
+      format: "json",
+      srsearch: data.replace(' ', '%20')
+    }
+    Object.keys(params).forEach(function(key){API_URL += "&" + key + "=" + params[key];});
+    return API_URL
+  }
+
   export default {
     data: () => ({
       words: "",
@@ -7,17 +20,12 @@
     }),
     methods: {
       async fetchData() {
+        if(this.words.trim() == '')
+        return;
         this.searching = true
-        let API_URL = "https://en.wikipedia.org/w/api.php" + "?origin=*"
-        let params = {
-          action: "query",
-          list: "search",
-          format: "json",
-          srsearch: this.words.replace(' ', '%20')
-        }
-        Object.keys(params).forEach(function(key){API_URL += "&" + key + "=" + params[key];});
-        this.results = await (await fetch(API_URL)).json()     
-        this.results = this.results.query.search
+        let request =  makerequestwiki(this.words)
+        let response = await (await fetch(request)).json()
+        this.results = response.query.search
         this.searching = false
       }
     }
@@ -27,7 +35,7 @@
 
 <template>
   <div class="container">
-    <h1 class="mt-5">Buscador Latino</h1>
+    <h1 class="mt-5">Tu Buscador Latino</h1>
     <p class="lead">¿Que desear buscar hoy?</p>
     <form @submit.prevent="fetchData()">
       <div class="input-group mb-3">
@@ -44,10 +52,11 @@
     </div>
 
     <ul class="list-group list-group-flush mt-5 mb-5">
-      <li v-for="result in results" class="list-group-item">
-        <div class="ms-2 me-auto">
-          <div class="fw-bold">{{ result?.pageid}} - {{result?.title}}</div>
-          {{result?.snippet.replace(/<[^>]*>?/g, '')}}
+      <li v-for="result in results" class="list-group-item col-md-8">
+        <div class="fw-bold fs-5">{{result?.title}}</div>
+        <div class="fw-light">{{result?.snippet.replace(/<[^>]*>?/g, '')}}</div>
+        <div class="text-end">
+          <span class="badge bg-info text-withe">page id: {{ result?.pageid}}</span>
         </div>
       </li>
     </ul>
