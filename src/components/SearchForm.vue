@@ -21,11 +21,20 @@
     methods: {
       async fetchData() {
         if(this.words.trim() == '')
-        return;
+          return;
         this.searching = true
-        let request =  makerequestwiki(this.words)
-        let response = await (await fetch(request)).json()
-        this.results = response.query.search
+        // let request =  makerequestwiki(this.words)
+        // let response = await (await fetch(request)).json()
+        let API_URL = "http://192.168.1.8:8000/APIv1/" + "searchs/"
+        const search = {
+          words: this.words,
+        }
+        let response = await (await fetch(API_URL, { 
+          method: "POST",
+          body: JSON.stringify(search),
+          headers: { "Content-Type": "application/json" } 
+        })).json()
+        this.results = response?.query.search
         this.searching = false
       }
     }
